@@ -35,7 +35,7 @@ export function useAuth() {
       const trimmedUsername = username.trim().toLowerCase();
       const trimmedPassword = password.trim();
 
-      console.log('Attempting login with:', { username: trimmedUsername, password: trimmedPassword });
+      console.log('Attempting login with:', { username: trimmedUsername });
 
       const credentials = VALID_CREDENTIALS[trimmedUsername as keyof typeof VALID_CREDENTIALS];
       
@@ -46,8 +46,16 @@ export function useAuth() {
           name: credentials.name
         };
         
+        // Set user state immediately
         setUser(userData);
-        localStorage.setItem('fleetUser', JSON.stringify(userData));
+        
+        // Save to localStorage
+        try {
+          localStorage.setItem('fleetUser', JSON.stringify(userData));
+        } catch (error) {
+          console.error('Error saving user to localStorage:', error);
+        }
+        
         console.log('Login successful:', userData);
         return true;
       }

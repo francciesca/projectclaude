@@ -1,13 +1,218 @@
-<!doctype html>
-<html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Complete Fleet Management System</title>
-  </head>
-  <body>
-    <div id="root"></div>
-    <script type="module" src="/src/main.tsx"></script>
-  </body>
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Complete Fleet Management System</title>
+  
+  <!-- PWA Meta Tags -->
+  <meta name="theme-color" content="#3b82f6">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="apple-mobile-web-app-title" content="Fleet Manager">
+  <meta name="description" content="Sistema completo de gestión de flotas">
+  
+  <!-- PWA Manifest -->
+  <link rel="manifest" href="/manifest.json">
+  <link rel="apple-touch-icon" href="/icon-192.png">
+  <link rel="icon" type="image/png" sizes="192x192" href="/icon-192.png">
+  
+  <!-- Preconnect para mejorar velocidad -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  
+  <!-- Optimización para móviles -->
+  <meta name="format-detection" content="telephone=no">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-touch-fullscreen" content="yes">
+</head>
+<body>
+  <div id="root"></div>
+  
+  <!-- Botón de instalación PWA optimizado para móviles -->
+  <div id="installPrompt" style="
+    display: none; 
+    position: fixed; 
+    bottom: 20px; 
+    right: 20px; 
+    z-index: 9999;
+    animation: slideUp 0.3s ease-out;
+  ">
+    <button id="installBtn" style="
+      background: linear-gradient(45deg, #3b82f6, #1d4ed8);
+      color: white;
+      border: none;
+      padding: 14px 20px;
+      border-radius: 25px;
+      font-weight: bold;
+      cursor: pointer;
+      box-shadow: 0 4px 15px rgba(59, 130, 246, 0.4);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 14px;
+      transition: all 0.3s ease;
+      border: 2px solid rgba(255, 255, 255, 0.2);
+      backdrop-filter: blur(10px);
+    ">
+      📱 Instalar App
+    </button>
+  </div>
+
+  <style>
+    @keyframes slideUp {
+      from {
+        transform: translateY(100px);
+        opacity: 0;
+      }
+      to {
+        transform: translateY(0);
+        opacity: 1;
+      }
+    }
+    
+    #installBtn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(59, 130, 246, 0.6);
+    }
+    
+    #installBtn:active {
+      transform: translateY(0);
+    }
+    
+    /* Optimización para móviles */
+    @media (max-width: 768px) {
+      #installPrompt {
+        bottom: 15px;
+        right: 15px;
+      }
+      
+      #installBtn {
+        padding: 12px 16px;
+        font-size: 13px;
+      }
+    }
+    
+    /* Prevenir flash de contenido sin estilo */
+    #root {
+      min-height: 100vh;
+      background: #1f2937;
+    }
+  </style>
+
+  <script>
+    // Service Worker Registration con manejo de errores mejorado
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', async () => {
+        try {
+          const registration = await navigator.serviceWorker.register('/sw.js', {
+            scope: '/'
+          });
+          console.log('✅ SW registrado correctamente:', registration.scope);
+          
+          // Actualizar SW si hay una nueva versión
+          registration.addEventListener('updatefound', () => {
+            console.log('🔄 Nueva versión del SW disponible');
+          });
+          
+        } catch (error) {
+          console.error('❌ SW falló al registrarse:', error);
+        }
+      });
+    }
+
+    // PWA Installation con mejor UX móvil
+    let deferredPrompt;
+    const installPrompt = document.getElementById('installPrompt');
+    const installBtn = document.getElementById('installBtn');
+
+    window.addEventListener('beforeinstallprompt', (e) => {
+      e.preventDefault();
+      deferredPrompt = e;
+      
+      // Mostrar botón después de un pequeño delay para mejor UX
+      setTimeout(() => {
+        installPrompt.style.display = 'block';
+      }, 2000);
+    });
+
+    installBtn.addEventListener('click', async () => {
+      if (!deferredPrompt) return;
+      
+      // Feedback visual inmediato
+      installBtn.style.transform = 'scale(0.95)';
+      installBtn.textContent = '⏳ Instalando...';
+      
+      try {
+        deferredPrompt.prompt();
+        const { outcome } = await deferredPrompt.userChoice;
+        
+        if (outcome === 'accepted') {
+          console.log('✅ Usuario instaló la PWA');
+          // Opcional: Analytics o tracking
+        } else {
+          console.log('❌ Usuario rechazó la instalación');
+        }
+        
+      } catch (error) {
+        console.error('Error en la instalación:', error);
+        installBtn.textContent = '❌ Error';
+        setTimeout(() => {
+          installBtn.textContent = '📱 Instalar App';
+        }, 2000);
+      }
+      
+      deferredPrompt = null;
+      installPrompt.style.display = 'none';
+    });
+
+    // Optimización: Precargar módulos críticos cuando sea necesario
+    document.addEventListener('DOMContentLoaded', () => {
+      // Solo si el navegador lo soporta
+      if ('modulepreload' in HTMLLinkElement.prototype) {
+        const link = document.createElement('link');
+        link.rel = 'modulepreload';
+        link.href = '/src/main.tsx';
+        document.head.appendChild(link);
+      }
+    });
+
+    // Detectar si la app ya está instalada
+    window.addEventListener('appinstalled', () => {
+      console.log('✅ PWA instalada exitosamente');
+      installPrompt.style.display = 'none';
+      
+      // Opcional: Mostrar mensaje de bienvenida
+      if ('Notification' in window && Notification.permission === 'granted') {
+        new Notification('Fleet Manager', {
+          body: '¡App instalada correctamente!',
+          icon: '/icon-192.png'
+        });
+      }
+    });
+
+    // Optimización de rendimiento: Lazy load de imágenes
+    if ('IntersectionObserver' in window) {
+      const imageObserver = new IntersectionObserver((entries, observer) => {
+        entries.forEach(entry => {
+          if (entry.isIntersecting) {
+            const img = entry.target;
+            img.src = img.dataset.src;
+            img.classList.remove('lazy');
+            imageObserver.unobserve(img);
+          }
+        });
+      });
+      
+      // Aplicar a imágenes con data-src cuando se cargue React
+      setTimeout(() => {
+        document.querySelectorAll('img[data-src]').forEach(img => {
+          imageObserver.observe(img);
+        });
+      }, 1000);
+    }
+  </script>
+  
+  <!-- Vite entry point -->
+  <script type="module" src="/src/main.tsx"></script>
+</body>
 </html>

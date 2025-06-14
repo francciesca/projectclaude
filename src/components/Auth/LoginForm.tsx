@@ -24,25 +24,20 @@ export function LoginForm() {
       }
 
       // Simulate authentication delay
-      await new Promise(resolve => setTimeout(resolve, 800));
+      await new Promise(resolve => setTimeout(resolve, 500));
 
       const success = login(username, password);
       
       if (!success) {
         setError('Credenciales incorrectas. Verifique su usuario y contraseña.');
+        setIsLoading(false);
       }
+      // If success, the useAuth hook will handle the state change
     } catch (error) {
       console.error('Login error:', error);
       setError('Error al iniciar sesión. Intente nuevamente.');
+      setIsLoading(false);
     }
-    
-    setIsLoading(false);
-  };
-
-  const handleQuickLogin = (user: string, pass: string) => {
-    setUsername(user);
-    setPassword(pass);
-    setError('');
   };
 
   return (
@@ -78,6 +73,7 @@ export function LoginForm() {
                   placeholder="Ingrese su usuario"
                   required
                   autoComplete="username"
+                  disabled={isLoading}
                 />
               </div>
             </div>
@@ -100,11 +96,13 @@ export function LoginForm() {
                   placeholder="Ingrese su contraseña"
                   required
                   autoComplete="current-password"
+                  disabled={isLoading}
                 />
                 <button
                   type="button"
                   className="absolute inset-y-0 right-0 pr-3 flex items-center"
                   onClick={() => setShowPassword(!showPassword)}
+                  disabled={isLoading}
                 >
                   {showPassword ? (
                     <EyeOff className="h-5 w-5 text-gray-400 hover:text-gray-600" />
@@ -139,28 +137,20 @@ export function LoginForm() {
             </button>
           </form>
 
-          {/* Credenciales de prueba */}
+          {/* Información de acceso */}
           <div className="mt-8 pt-6 border-t border-gray-200">
-            <p className="text-xs text-gray-500 text-center mb-3">Credenciales de prueba (haz clic para usar):</p>
-            <div className="space-y-2 text-xs">
-              <button
-                type="button"
-                onClick={() => handleQuickLogin('cabal', 'cabal123')}
-                className="w-full bg-gray-50 rounded-lg p-3 hover:bg-gray-100 transition-colors text-left"
-              >
-                <p className="font-medium text-gray-700">Administrador:</p>
-                <p className="text-gray-600">Usuario: <span className="font-mono">cabal</span></p>
-                <p className="text-gray-600">Contraseña: <span className="font-mono">cabal123</span></p>
-              </button>
-              <button
-                type="button"
-                onClick={() => handleQuickLogin('usuario', 'usuario123')}
-                className="w-full bg-gray-50 rounded-lg p-3 hover:bg-gray-100 transition-colors text-left"
-              >
-                <p className="font-medium text-gray-700">Usuario Regular:</p>
-                <p className="text-gray-600">Usuario: <span className="font-mono">usuario</span></p>
-                <p className="text-gray-600">Contraseña: <span className="font-mono">usuario123</span></p>
-              </button>
+            <div className="text-center">
+              <p className="text-sm text-gray-600 mb-4">
+                Para acceder al sistema, contacte al administrador para obtener sus credenciales.
+              </p>
+              <div className="bg-blue-50 rounded-lg p-4">
+                <h3 className="text-sm font-semibold text-blue-800 mb-2">Información del Sistema</h3>
+                <ul className="text-xs text-blue-700 space-y-1">
+                  <li>• Sistema de gestión de flotas vehiculares</li>
+                  <li>• Control de vehículos, conductores y mantenimiento</li>
+                  <li>• Gestión de documentos y alertas</li>
+                </ul>
+              </div>
             </div>
           </div>
         </div>
