@@ -32,7 +32,7 @@ export function Header({ isMobileMenuOpen, setIsMobileMenuOpen }: HeaderProps) {
               </div>
               <div>
                 <h1 
-                  className="text-xl font-bold text-gray-900 cursor-pointer hover:text-blue-600 transition-colors"
+                  className="text-lg sm:text-xl font-bold text-gray-900 cursor-pointer hover:text-blue-600 transition-colors"
                   onClick={() => setShowCompanySelector(!showCompanySelector)}
                 >
                   REGISTRO DE FLOTAS
