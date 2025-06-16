@@ -37,7 +37,7 @@ export function Header({ isMobileMenuOpen, setIsMobileMenuOpen }: HeaderProps) {
                 >
                   REGISTRO DE FLOTAS
                 </h1>
-                <p className="text-sm text-gray-600">
+                <p className="text-xs text-gray-600">
                   Trabajando en: <span className="font-semibold text-blue-600">{currentCompany.name}</span>
                 </p>
               </div>
