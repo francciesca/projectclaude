@@ -22,14 +22,15 @@ export function useAuth() {
       } catch (error) {
         console.error('Error loading saved user:', error);
         localStorage.removeItem('fleetUser');
+      } finally {
+        setIsLoading(false);
       }
-      setIsLoading(false);
     };
 
     checkSavedUser();
   }, []);
 
-  const login = (username: string, password: string): boolean => {
+  const login = async (username: string, password: string): Promise<boolean> => {
     try {
       // Trim whitespace from inputs
       const trimmedUsername = username.trim().toLowerCase();
@@ -46,15 +47,11 @@ export function useAuth() {
           name: credentials.name
         };
         
-        // Set user state immediately
-        setUser(userData);
+        // Save to localStorage first
+        localStorage.setItem('fleetUser', JSON.stringify(userData));
         
-        // Save to localStorage
-        try {
-          localStorage.setItem('fleetUser', JSON.stringify(userData));
-        } catch (error) {
-          console.error('Error saving user to localStorage:', error);
-        }
+        // Then set user state
+        setUser(userData);
         
         console.log('Login successful:', userData);
         return true;
@@ -70,8 +67,12 @@ export function useAuth() {
 
   const logout = () => {
     try {
-      setUser(null);
+      // Clear localStorage first
       localStorage.removeItem('fleetUser');
+      
+      // Then clear user state
+      setUser(null);
+      
       console.log('Logout successful');
     } catch (error) {
       console.error('Logout error:', error);

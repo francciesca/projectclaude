@@ -19,23 +19,20 @@ export function LoginForm() {
       // Validate inputs
       if (!username.trim() || !password.trim()) {
         setError('Por favor ingrese usuario y contraseña');
-        setIsLoading(false);
         return;
       }
 
-      // Simulate authentication delay
-      await new Promise(resolve => setTimeout(resolve, 500));
-
-      const success = login(username, password);
+      // Attempt login
+      const success = await login(username, password);
       
       if (!success) {
         setError('Credenciales incorrectas. Verifique su usuario y contraseña.');
-        setIsLoading(false);
       }
-      // If success, the useAuth hook will handle the state change
+      // If success, the useAuth hook will handle the state change automatically
     } catch (error) {
       console.error('Login error:', error);
       setError('Error al iniciar sesión. Intente nuevamente.');
+    } finally {
       setIsLoading(false);
     }
   };
