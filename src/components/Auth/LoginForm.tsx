@@ -28,7 +28,7 @@ export function LoginForm() {
       if (!success) {
         setError('Credenciales incorrectas. Verifique su usuario y contraseña.');
       }
-      // If success, the useAuth hook will handle the state change automatically
+      // If success, the component will unmount as user state changes
     } catch (error) {
       console.error('Login error:', error);
       setError('Error al iniciar sesión. Intente nuevamente.');

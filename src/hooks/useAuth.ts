@@ -17,6 +17,7 @@ export function useAuth() {
         const savedUser = localStorage.getItem('fleetUser');
         if (savedUser) {
           const userData = JSON.parse(savedUser);
+          console.log('Loaded saved user:', userData);
           setUser(userData);
         }
       } catch (error) {
@@ -47,17 +48,18 @@ export function useAuth() {
           name: credentials.name
         };
         
+        console.log('Login successful, saving user:', userData);
+        
         // Save to localStorage first
         localStorage.setItem('fleetUser', JSON.stringify(userData));
         
-        // Then set user state
+        // Then set user state - this will trigger a re-render
         setUser(userData);
         
-        console.log('Login successful:', userData);
         return true;
       }
       
-      console.log('Invalid credentials');
+      console.log('Invalid credentials for username:', trimmedUsername);
       return false;
     } catch (error) {
       console.error('Login error:', error);
@@ -67,6 +69,8 @@ export function useAuth() {
 
   const logout = () => {
     try {
+      console.log('Logging out user');
+      
       // Clear localStorage first
       localStorage.removeItem('fleetUser');
       
