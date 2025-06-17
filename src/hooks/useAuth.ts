@@ -68,20 +68,18 @@ export function useAuth() {
   };
 
   const logout = () => {
-    try {
-      console.log('Logging out user');
-      
-      // Clear localStorage first
-      localStorage.removeItem('fleetUser');
-      
-      // Then clear user state
-      setUser(null);
-      
-      console.log('Logout successful');
-    } catch (error) {
-      console.error('Logout error:', error);
-    }
-  };
+  try {
+    console.log('Logging out user');
+    localStorage.removeItem('fleetUser');
+    setUser(null);
+    setTimeout(() => {
+      window.location.reload();
+    }, 100);
+    console.log('Logout successful');
+  } catch (error) {
+    console.error('Logout error:', error)
+  }
+}
 
   return {
     user,
