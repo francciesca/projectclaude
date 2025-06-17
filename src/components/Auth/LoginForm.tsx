@@ -25,10 +25,13 @@ export function LoginForm() {
       // Attempt login
       const success = await login(username, password);
       
-      if (!success) {
-        setError('Credenciales incorrectas. Verifique su usuario y contraseña.');
-      }
-      // If success, the component will unmount as user state changes
+if (!success) {
+  setError('Credenciales incorrectas. Verifique su usuario y contraseña.');
+} else {
+  setTimeout(() => {
+    window.location.reload();
+  }, 100);
+}
     } catch (error) {
       console.error('Login error:', error);
       setError('Error al iniciar sesión. Intente nuevamente.');
