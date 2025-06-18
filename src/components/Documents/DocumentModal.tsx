@@ -112,6 +112,7 @@ export function DocumentModal({ isOpen, onClose, onSave, document }: DocumentMod
                 <option value="insurance">Seguro</option>
                 <option value="registration">Registro</option>
                 <option value="permit">Permiso</option>
+                <option value="technical-review">Revisión Técnica</option>
                 <option value="other">Otro</option>
               </select>
             </div>

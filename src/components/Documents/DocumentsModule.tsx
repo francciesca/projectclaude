@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { FileText, Plus, Search, Filter, Eye, Edit, Trash2, Download, Upload, AlertTriangle, CheckCircle, Clock } from 'lucide-react';
+import { FileText, Plus, Search, Filter, Eye, Edit, Trash2, Download, Upload, AlertTriangle, CheckCircle, Clock, Shield } from 'lucide-react';
 import { Document } from '../../types';
 import { mockDocuments } from '../../data/mockData';
 import { useCompany } from '../../hooks/useCompany';
@@ -76,7 +76,7 @@ export function DocumentsModule() {
   const getStatusIcon = (status: string) => {
     switch (status) {
       case 'valid':
-        return <CheckCircle className="text-green-500\" size={20} />;
+        return <CheckCircle className="text-green-500" size={20} />;
       case 'expiring':
         return <Clock className="text-yellow-500" size={20} />;
       case 'expired':
@@ -120,6 +120,8 @@ export function DocumentsModule() {
         return 'Registro';
       case 'permit':
         return 'Permiso';
+      case 'technical-review':
+        return 'Revisión Técnica';
       case 'other':
         return 'Otro';
       default:
@@ -127,11 +129,23 @@ export function DocumentsModule() {
     }
   };
 
+  const getTypeIcon = (type: string) => {
+    switch (type) {
+      case 'technical-review':
+        return <Shield className="text-blue-500" size={20} />;
+      case 'insurance':
+        return <Shield className="text-green-500" size={20} />;
+      default:
+        return <FileText className="text-gray-500" size={20} />;
+    }
+  };
+
   const stats = {
     total: documents.length,
     valid: documents.filter(d => d.status === 'valid').length,
     expiring: documents.filter(d => d.status === 'expiring').length,
-    expired: documents.filter(d => d.status === 'expired').length
+    expired: documents.filter(d => d.status === 'expired').length,
+    technicalReviews: documents.filter(d => d.type === 'technical-review').length
   };
 
   return (
@@ -155,7 +169,7 @@ export function DocumentsModule() {
       </div>
 
       {/* Statistics */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 lg:grid-cols-5 gap-4">
         <div className="bg-white rounded-lg p-4 border border-gray-200">
           <div className="flex items-center justify-between">
             <div>
@@ -192,6 +206,15 @@ export function DocumentsModule() {
             <AlertTriangle className="text-red-500" size={24} />
           </div>
         </div>
+        <div className="bg-white rounded-lg p-4 border border-gray-200">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-sm text-gray-600">Rev. Técnicas</p>
+              <p className="text-2xl font-bold text-blue-600">{stats.technicalReviews}</p>
+            </div>
+            <Shield className="text-blue-500" size={24} />
+          </div>
+        </div>
       </div>
 
       {/* Filters */}
@@ -220,6 +243,7 @@ export function DocumentsModule() {
               <option value="insurance">Seguro</option>
               <option value="registration">Registro</option>
               <option value="permit">Permiso</option>
+              <option value="technical-review">Revisión Técnica</option>
               <option value="other">Otro</option>
             </select>
             <select
@@ -243,7 +267,7 @@ export function DocumentsModule() {
             <div className="p-6">
               <div className="flex items-start justify-between mb-4">
                 <div className="flex items-center space-x-3">
-                  {getStatusIcon(document.status)}
+                  {getTypeIcon(document.type)}
                   <div>
                     <h3 className="text-lg font-bold text-gray-900">{document.name}</h3>
                     <p className="text-sm text-gray-600">{getTypeLabel(document.type)}</p>

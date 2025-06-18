@@ -17,11 +17,17 @@ export interface Vehicle {
   model: string;
   year: number;
   color: string;
+  vehicleType: 'camion' | 'camioneta' | 'cama-baja' | 'auto' | 'furgon' | 'bus' | 'maquinaria' | 'otro';
   purchaseDate: string;
   mileage: number;
   status: 'available' | 'rented' | 'maintenance';
   lastMaintenance?: string;
+  lastMaintenanceMileage?: number;
   nextMaintenance?: string;
+  nextMaintenanceMileage?: number;
+  maintenanceInterval: number; // Kilometros entre mantenimientos
+  technicalReviewExpiry?: string; // Fecha de vencimiento de revisión técnica
+  currentClient?: string; // Cliente o empresa actual
   companyId: string;
 }
 
@@ -64,7 +70,7 @@ export interface Maintenance {
 export interface Document {
   id: string;
   name: string;
-  type: 'insurance' | 'registration' | 'permit' | 'other';
+  type: 'insurance' | 'registration' | 'permit' | 'technical-review' | 'other';
   expiryDate: string;
   status: 'valid' | 'expiring' | 'expired';
   vehicleId?: string;
@@ -77,7 +83,7 @@ export interface Alert {
   title: string;
   description: string;
   priority: 'low' | 'medium' | 'high' | 'urgent';
-  type: 'maintenance' | 'document' | 'license' | 'insurance';
+  type: 'maintenance' | 'document' | 'license' | 'insurance' | 'technical-review';
   date: string;
   companyId: string;
 }

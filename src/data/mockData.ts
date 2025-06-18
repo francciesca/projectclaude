@@ -9,11 +9,17 @@ export const mockVehicles: Vehicle[] = [
     model: 'Corolla',
     year: 2022,
     color: 'Blanco',
+    vehicleType: 'auto',
     purchaseDate: '2022-01-15',
     mileage: 25000,
     status: 'available',
     lastMaintenance: '2024-01-15',
+    lastMaintenanceMileage: 20000,
     nextMaintenance: '2024-07-15',
+    nextMaintenanceMileage: 30000,
+    maintenanceInterval: 10000,
+    technicalReviewExpiry: '2024-12-31',
+    currentClient: 'Empresa Logística Norte',
     companyId: '1'
   },
   {
@@ -21,14 +27,20 @@ export const mockVehicles: Vehicle[] = [
     vin: 'JH4KA3150KC007857',
     plate: 'DEF-456',
     brand: 'Chevrolet',
-    model: 'Spark',
+    model: 'NPR',
     year: 2021,
     color: 'Rojo',
+    vehicleType: 'camion',
     purchaseDate: '2021-06-10',
     mileage: 45000,
     status: 'rented',
     lastMaintenance: '2024-02-10',
+    lastMaintenanceMileage: 40000,
     nextMaintenance: '2024-08-10',
+    nextMaintenanceMileage: 50000,
+    maintenanceInterval: 10000,
+    technicalReviewExpiry: '2024-06-15',
+    currentClient: 'Constructora San Miguel',
     companyId: '1'
   },
   {
@@ -36,14 +48,40 @@ export const mockVehicles: Vehicle[] = [
     vin: 'JH4KA3150KC007858',
     plate: 'GHI-789',
     brand: 'Nissan',
-    model: 'Sentra',
+    model: 'Frontier',
     year: 2023,
     color: 'Azul',
+    vehicleType: 'camioneta',
     purchaseDate: '2023-03-20',
     mileage: 15000,
     status: 'maintenance',
     lastMaintenance: '2024-03-01',
+    lastMaintenanceMileage: 10000,
     nextMaintenance: '2024-09-01',
+    nextMaintenanceMileage: 20000,
+    maintenanceInterval: 10000,
+    technicalReviewExpiry: '2024-11-30',
+    companyId: '1'
+  },
+  {
+    id: '4',
+    vin: 'JH4KA3150KC007859',
+    plate: 'JKL-012',
+    brand: 'Mercedes-Benz',
+    model: 'Actros',
+    year: 2020,
+    color: 'Blanco',
+    vehicleType: 'cama-baja',
+    purchaseDate: '2020-08-15',
+    mileage: 85000,
+    status: 'available',
+    lastMaintenance: '2024-01-20',
+    lastMaintenanceMileage: 80000,
+    nextMaintenance: '2024-06-20',
+    nextMaintenanceMileage: 90000,
+    maintenanceInterval: 10000,
+    technicalReviewExpiry: '2024-04-30',
+    currentClient: 'Transportes Pesados Ltda',
     companyId: '1'
   }
 ];
@@ -132,6 +170,24 @@ export const mockDocuments: Document[] = [
     status: 'expiring',
     driverId: '1',
     companyId: '1'
+  },
+  {
+    id: '3',
+    name: 'Revisión Técnica - DEF-456',
+    type: 'technical-review',
+    expiryDate: '2024-06-15',
+    status: 'expiring',
+    vehicleId: '2',
+    companyId: '1'
+  },
+  {
+    id: '4',
+    name: 'Revisión Técnica - JKL-012',
+    type: 'technical-review',
+    expiryDate: '2024-04-30',
+    status: 'expiring',
+    vehicleId: '4',
+    companyId: '1'
   }
 ];
 
@@ -152,6 +208,33 @@ export const mockAlerts: Alert[] = [
     priority: 'high',
     type: 'license',
     date: '2024-03-12',
+    companyId: '1'
+  },
+  {
+    id: '3',
+    title: 'Revisión Técnica por Vencer',
+    description: 'La revisión técnica del vehículo DEF-456 vence el 15 de junio',
+    priority: 'high',
+    type: 'technical-review',
+    date: '2024-05-15',
+    companyId: '1'
+  },
+  {
+    id: '4',
+    title: 'Mantenimiento por Kilometraje',
+    description: 'El vehículo ABC-123 está próximo a alcanzar los 30,000 km para mantenimiento',
+    priority: 'medium',
+    type: 'maintenance',
+    date: '2024-03-14',
+    companyId: '1'
+  },
+  {
+    id: '5',
+    title: 'Revisión Técnica Crítica',
+    description: 'La revisión técnica del vehículo JKL-012 vence en 15 días',
+    priority: 'urgent',
+    type: 'technical-review',
+    date: '2024-04-15',
     companyId: '1'
   }
 ];

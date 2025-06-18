@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { X, Car, Edit, Calendar, Shield, Wrench, Plus, FileText } from 'lucide-react';
+import { X, Car, Edit, Calendar, Shield, Wrench, Plus, FileText, Building2, AlertTriangle, Fuel } from 'lucide-react';
 import { Vehicle } from '../../types';
 
 interface VehicleDetailModalProps {
@@ -28,6 +28,17 @@ interface MaintenanceRecord {
   workshop: string;
   mileage: number;
 }
+
+const vehicleTypeLabels = {
+  'auto': 'Automóvil',
+  'camioneta': 'Camioneta',
+  'camion': 'Camión',
+  'cama-baja': 'Cama Baja',
+  'furgon': 'Furgón',
+  'bus': 'Bus',
+  'maquinaria': 'Maquinaria',
+  'otro': 'Otro'
+};
 
 export function VehicleDetailModal({ isOpen, onClose, vehicle, onEdit }: VehicleDetailModalProps) {
   const [activeTab, setActiveTab] = useState('info');
@@ -85,6 +96,16 @@ export function VehicleDetailModal({ isOpen, onClose, vehicle, onEdit }: Vehicle
 
   const status = statusColors[vehicle.status];
 
+  // Calculate maintenance status
+  const kmUntilMaintenance = vehicle.nextMaintenanceMileage ? vehicle.nextMaintenanceMileage - vehicle.mileage : null;
+  const needsMaintenance = kmUntilMaintenance !== null && kmUntilMaintenance <= 1000;
+  
+  // Check technical review status
+  const today = new Date();
+  const technicalReviewDate = vehicle.technicalReviewExpiry ? new Date(vehicle.technicalReviewExpiry) : null;
+  const daysUntilTechnicalReview = technicalReviewDate ? Math.ceil((technicalReviewDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24)) : null;
+  const technicalReviewExpiring = daysUntilTechnicalReview !== null && daysUntilTechnicalReview <= 30;
+
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
       <div className="bg-white rounded-xl shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-hidden">
@@ -98,10 +119,18 @@ export function VehicleDetailModal({ isOpen, onClose, vehicle, onEdit }: Vehicle
               <h2 className="text-2xl font-bold text-gray-900">
                 {vehicle.brand} {vehicle.model}
               </h2>
-              <p className="text-gray-600">{vehicle.year} • {vehicle.color}</p>
-              <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${status.bg} ${status.text} mt-1`}>
-                {status.label}
-              </span>
+              <p className="text-gray-600">{vehicle.year} • {vehicle.color} • {vehicleTypeLabels[vehicle.vehicleType]}</p>
+              <div className="flex items-center space-x-2 mt-1">
+                <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${status.bg} ${status.text}`}>
+                  {status.label}
+                </span>
+                {(needsMaintenance || technicalReviewExpiring) && (
+                  <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">
+                    <AlertTriangle size={12} className="mr-1" />
+                    Requiere Atención
+                  </span>
+                )}
+              </div>
             </div>
           </div>
           <div className="flex items-center space-x-2">
@@ -151,46 +180,154 @@ export function VehicleDetailModal({ isOpen, onClose, vehicle, onEdit }: Vehicle
         {/* Content */}
         <div className="p-6 overflow-y-auto max-h-[60vh]">
           {activeTab === 'info' && (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div className="space-y-4">
-                <h3 className="text-lg font-semibold text-gray-900 mb-4">Información Básica</h3>
-                <div className="space-y-3">
-                  <div>
-                    <label className="text-sm font-medium text-gray-500">VIN</label>
-                    <p className="text-gray-900 font-mono">{vehicle.vin}</p>
+            <div className="space-y-6">
+              {/* Alerts Section */}
+              {(needsMaintenance || technicalReviewExpiring) && (
+                <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+                  <h3 className="text-lg font-semibold text-red-800 mb-3 flex items-center">
+                    <AlertTriangle className="mr-2" size={20} />
+                    Alertas Importantes
+                  </h3>
+                  <div className="space-y-2">
+                    {needsMaintenance && (
+                      <div className="flex items-center text-red-700">
+                        <Wrench size={16} className="mr-2" />
+                        <span>
+                          {kmUntilMaintenance! > 0 
+                            ? `Mantenimiento próximo en ${kmUntilMaintenance!.toLocaleString()} km`
+                            : `Mantenimiento vencido por ${Math.abs(kmUntilMaintenance!).toLocaleString()} km`
+                          }
+                        </span>
+                      </div>
+                    )}
+                    {technicalReviewExpiring && (
+                      <div className="flex items-center text-red-700">
+                        <Calendar size={16} className="mr-2" />
+                        <span>
+                          {daysUntilTechnicalReview! > 0 
+                            ? `Revisión técnica vence en ${daysUntilTechnicalReview} días`
+                            : `Revisión técnica vencida hace ${Math.abs(daysUntilTechnicalReview!)} días`
+                          }
+                        </span>
+                      </div>
+                    )}
                   </div>
-                  <div>
-                    <label className="text-sm font-medium text-gray-500">Matrícula</label>
-                    <p className="text-gray-900 font-mono text-lg font-bold">{vehicle.plate}</p>
+                </div>
+              )}
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="space-y-4">
+                  <h3 className="text-lg font-semibold text-gray-900 mb-4">Información Básica</h3>
+                  <div className="space-y-3">
+                    <div>
+                      <label className="text-sm font-medium text-gray-500">VIN</label>
+                      <p className="text-gray-900 font-mono">{vehicle.vin}</p>
+                    </div>
+                    <div>
+                      <label className="text-sm font-medium text-gray-500">Matrícula</label>
+                      <p className="text-gray-900 font-mono text-lg font-bold">{vehicle.plate}</p>
+                    </div>
+                    <div>
+                      <label className="text-sm font-medium text-gray-500">Tipo de Vehículo</label>
+                      <p className="text-gray-900">{vehicleTypeLabels[vehicle.vehicleType]}</p>
+                    </div>
+                    <div>
+                      <label className="text-sm font-medium text-gray-500">Fecha de Compra</label>
+                      <p className="text-gray-900">{new Date(vehicle.purchaseDate).toLocaleDateString()}</p>
+                    </div>
+                    {vehicle.currentClient && (
+                      <div>
+                        <label className="text-sm font-medium text-gray-500">Cliente/Empresa Actual</label>
+                        <p className="text-gray-900 flex items-center">
+                          <Building2 size={16} className="mr-2 text-blue-500" />
+                          {vehicle.currentClient}
+                        </p>
+                      </div>
+                    )}
                   </div>
-                  <div>
-                    <label className="text-sm font-medium text-gray-500">Fecha de Compra</label>
-                    <p className="text-gray-900">{new Date(vehicle.purchaseDate).toLocaleDateString()}</p>
-                  </div>
-                  <div>
-                    <label className="text-sm font-medium text-gray-500">Kilometraje</label>
-                    <p className="text-gray-900">{vehicle.mileage.toLocaleString()} km</p>
+                </div>
+
+                <div className="space-y-4">
+                  <h3 className="text-lg font-semibold text-gray-900 mb-4">Kilometraje y Mantenimiento</h3>
+                  <div className="space-y-3">
+                    <div>
+                      <label className="text-sm font-medium text-gray-500">Kilometraje Actual</label>
+                      <p className="text-gray-900 flex items-center">
+                        <Fuel size={16} className="mr-2 text-blue-500" />
+                        {vehicle.mileage.toLocaleString()} km
+                      </p>
+                    </div>
+                    <div>
+                      <label className="text-sm font-medium text-gray-500">Intervalo de Mantenimiento</label>
+                      <p className="text-gray-900">{vehicle.maintenanceInterval.toLocaleString()} km</p>
+                    </div>
+                    {vehicle.lastMaintenance && (
+                      <div>
+                        <label className="text-sm font-medium text-gray-500">Último Mantenimiento</label>
+                        <p className="text-gray-900">{new Date(vehicle.lastMaintenance).toLocaleDateString()}</p>
+                        {vehicle.lastMaintenanceMileage && (
+                          <p className="text-sm text-gray-600">En {vehicle.lastMaintenanceMileage.toLocaleString()} km</p>
+                        )}
+                      </div>
+                    )}
+                    {vehicle.nextMaintenanceMileage && (
+                      <div>
+                        <label className="text-sm font-medium text-gray-500">Próximo Mantenimiento</label>
+                        <p className={`font-semibold ${needsMaintenance ? 'text-red-600' : 'text-gray-900'}`}>
+                          {vehicle.nextMaintenanceMileage.toLocaleString()} km
+                        </p>
+                        {kmUntilMaintenance !== null && (
+                          <p className={`text-sm ${needsMaintenance ? 'text-red-600' : 'text-gray-600'}`}>
+                            {kmUntilMaintenance > 0 
+                              ? `Faltan ${kmUntilMaintenance.toLocaleString()} km` 
+                              : `Vencido por ${Math.abs(kmUntilMaintenance).toLocaleString()} km`
+                            }
+                          </p>
+                        )}
+                      </div>
+                    )}
+                    {vehicle.technicalReviewExpiry && (
+                      <div>
+                        <label className="text-sm font-medium text-gray-500">Revisión Técnica</label>
+                        <p className={`font-semibold ${technicalReviewExpiring ? 'text-red-600' : 'text-gray-900'}`}>
+                          {new Date(vehicle.technicalReviewExpiry).toLocaleDateString()}
+                        </p>
+                        {daysUntilTechnicalReview !== null && (
+                          <p className={`text-sm ${technicalReviewExpiring ? 'text-red-600' : 'text-gray-600'}`}>
+                            {daysUntilTechnicalReview > 0 
+                              ? `Vence en ${daysUntilTechnicalReview} días` 
+                              : `Vencida hace ${Math.abs(daysUntilTechnicalReview)} días`
+                            }
+                          </p>
+                        )}
+                      </div>
+                    )}
                   </div>
                 </div>
               </div>
 
-              <div className="space-y-4">
-                <h3 className="text-lg font-semibold text-gray-900 mb-4">Mantenimiento</h3>
-                <div className="space-y-3">
-                  {vehicle.lastMaintenance && (
-                    <div>
-                      <label className="text-sm font-medium text-gray-500">Último Mantenimiento</label>
-                      <p className="text-gray-900">{new Date(vehicle.lastMaintenance).toLocaleDateString()}</p>
+              {/* Progress Bars */}
+              {vehicle.nextMaintenanceMileage && vehicle.lastMaintenanceMileage && (
+                <div className="bg-gray-50 rounded-lg p-4">
+                  <h4 className="text-sm font-semibold text-gray-700 mb-3">Progreso de Mantenimiento</h4>
+                  <div className="space-y-2">
+                    <div className="flex items-center justify-between text-sm">
+                      <span>Progreso actual</span>
+                      <span>{Math.round(((vehicle.mileage - vehicle.lastMaintenanceMileage) / vehicle.maintenanceInterval) * 100)}%</span>
                     </div>
-                  )}
-                  {vehicle.nextMaintenance && (
-                    <div>
-                      <label className="text-sm font-medium text-gray-500">Próximo Mantenimiento</label>
-                      <p className="text-gray-900">{new Date(vehicle.nextMaintenance).toLocaleDateString()}</p>
+                    <div className="w-full bg-gray-200 rounded-full h-3">
+                      <div
+                        className={`h-3 rounded-full transition-all duration-300 ${
+                          needsMaintenance ? 'bg-red-500' : 'bg-blue-500'
+                        }`}
+                        style={{ 
+                          width: `${Math.min(100, ((vehicle.mileage - vehicle.lastMaintenanceMileage) / vehicle.maintenanceInterval) * 100)}%` 
+                        }}
+                      ></div>
                     </div>
-                  )}
+                  </div>
                 </div>
-              </div>
+              )}
             </div>
           )}
 
