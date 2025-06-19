@@ -3,12 +3,20 @@ import { Wrench, Plus, Search, Filter, Calendar, Clock, CheckCircle, AlertTriang
 import { Maintenance } from '../../types';
 import { mockMaintenance } from '../../data/mockData';
 import { useCompany } from '../../hooks/useCompany';
+import { useCompanyData } from '../../hooks/useLocalStorage';
 import { MaintenanceModal } from './MaintenanceModal';
 import { MaintenanceCalendar } from './MaintenanceCalendar';
 
 export function MaintenanceModule() {
   const { currentCompany } = useCompany();
-  const [maintenances, setMaintenances] = useState<Maintenance[]>(mockMaintenance.filter(m => m.companyId === currentCompany.id));
+  
+  // Usar almacenamiento local para persistir los datos
+  const [maintenances, setMaintenances] = useCompanyData<Maintenance[]>(
+    'maintenances', 
+    mockMaintenance.filter(m => m.companyId === currentCompany.id),
+    currentCompany.id
+  );
+  
   const [filteredMaintenances, setFilteredMaintenances] = useState<Maintenance[]>(maintenances);
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('all');
@@ -45,8 +53,12 @@ export function MaintenanceModule() {
       id: Date.now().toString(),
       companyId: currentCompany.id
     };
-    setMaintenances([...maintenances, newMaintenance]);
+    const updatedMaintenances = [...maintenances, newMaintenance];
+    setMaintenances(updatedMaintenances);
     setShowModal(false);
+    
+    // Mostrar confirmación
+    alert('Mantenimiento programado y guardado correctamente');
   };
 
   const handleEditMaintenance = (maintenanceData: Omit<Maintenance, 'id' | 'companyId'>) => {
@@ -57,6 +69,9 @@ export function MaintenanceModule() {
       setMaintenances(updatedMaintenances);
       setEditingMaintenance(null);
       setShowModal(false);
+      
+      // Mostrar confirmación
+      alert('Mantenimiento actualizado y guardado correctamente');
     }
   };
 
@@ -66,7 +81,7 @@ export function MaintenanceModule() {
   };
 
   const handleProgressUpdate = (maintenanceId: string, increment: number) => {
-    setMaintenances(prev => prev.map(m => {
+    const updatedMaintenances = maintenances.map(m => {
       if (m.id === maintenanceId) {
         const newProgress = Math.min(100, Math.max(0, m.progress + increment));
         let newStatus = m.status;
@@ -80,11 +95,14 @@ export function MaintenanceModule() {
         return { ...m, progress: newProgress, status: newStatus };
       }
       return m;
-    }));
+    });
+    
+    setMaintenances(updatedMaintenances);
+    alert('Progreso actualizado y guardado correctamente');
   };
 
   const handleTaskToggle = (maintenanceId: string, taskId: string) => {
-    setMaintenances(prev => prev.map(m => {
+    const updatedMaintenances = maintenances.map(m => {
       if (m.id === maintenanceId) {
         const updatedTasks = m.tasks.map(task =>
           task.id === taskId ? { ...task, completed: !task.completed } : task
@@ -103,7 +121,9 @@ export function MaintenanceModule() {
         return { ...m, tasks: updatedTasks, progress: newProgress, status: newStatus };
       }
       return m;
-    }));
+    });
+    
+    setMaintenances(updatedMaintenances);
   };
 
   const getStatusIcon = (status: string) => {
@@ -196,6 +216,9 @@ export function MaintenanceModule() {
         <div>
           <h1 className="text-2xl font-bold text-gray-900">Gestión de Mantenimiento</h1>
           <p className="text-gray-600">Administra el mantenimiento de {currentCompany.name}</p>
+          <p className="text-sm text-green-600 mt-1">
+            ✓ Datos guardados automáticamente en tu dispositivo
+          </p>
         </div>
         <div className="mt-4 sm:mt-0 flex space-x-3">
           <button

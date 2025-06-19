@@ -3,11 +3,19 @@ import { FileText, Plus, Search, Filter, Eye, Edit, Trash2, Download, Upload, Al
 import { Document } from '../../types';
 import { mockDocuments } from '../../data/mockData';
 import { useCompany } from '../../hooks/useCompany';
+import { useCompanyData } from '../../hooks/useLocalStorage';
 import { DocumentModal } from './DocumentModal';
 
 export function DocumentsModule() {
   const { currentCompany } = useCompany();
-  const [documents, setDocuments] = useState<Document[]>(mockDocuments.filter(d => d.companyId === currentCompany.id));
+  
+  // Usar almacenamiento local para persistir los datos
+  const [documents, setDocuments] = useCompanyData<Document[]>(
+    'documents', 
+    mockDocuments.filter(d => d.companyId === currentCompany.id),
+    currentCompany.id
+  );
+  
   const [filteredDocuments, setFilteredDocuments] = useState<Document[]>(documents);
   const [searchTerm, setSearchTerm] = useState('');
   const [typeFilter, setTypeFilter] = useState<string>('all');
@@ -42,8 +50,12 @@ export function DocumentsModule() {
       id: Date.now().toString(),
       companyId: currentCompany.id
     };
-    setDocuments([...documents, newDocument]);
+    const updatedDocuments = [...documents, newDocument];
+    setDocuments(updatedDocuments);
     setShowModal(false);
+    
+    // Mostrar confirmación
+    alert('Documento agregado y guardado correctamente');
   };
 
   const handleEditDocument = (documentData: Omit<Document, 'id' | 'companyId'>) => {
@@ -54,12 +66,19 @@ export function DocumentsModule() {
       setDocuments(updatedDocuments);
       setEditingDocument(null);
       setShowModal(false);
+      
+      // Mostrar confirmación
+      alert('Documento actualizado y guardado correctamente');
     }
   };
 
   const handleDeleteDocument = (documentId: string) => {
-    if (confirm('¿Está seguro de que desea eliminar este documento?')) {
-      setDocuments(documents.filter(d => d.id !== documentId));
+    if (confirm('¿Está seguro de que desea eliminar este documento? Esta acción no se puede deshacer.')) {
+      const updatedDocuments = documents.filter(d => d.id !== documentId);
+      setDocuments(updatedDocuments);
+      
+      // Mostrar confirmación
+      alert('Documento eliminado correctamente');
     }
   };
 
@@ -155,6 +174,9 @@ export function DocumentsModule() {
         <div>
           <h1 className="text-2xl font-bold text-gray-900">Gestión de Documentos</h1>
           <p className="text-gray-600">Administra los documentos de {currentCompany.name}</p>
+          <p className="text-sm text-green-600 mt-1">
+            ✓ Datos guardados automáticamente en tu dispositivo
+          </p>
         </div>
         <button
           onClick={() => {

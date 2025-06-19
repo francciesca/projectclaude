@@ -2,8 +2,9 @@ import React, { useState } from 'react';
 import { Car, CheckCircle, Wrench, DollarSign, AlertTriangle, Calendar, FileText, Users } from 'lucide-react';
 import { StatCard } from './StatCard';
 import { AlertsModal } from './AlertsModal';
-import { mockVehicles, mockAlerts, mockDrivers, mockMaintenance, mockDocuments } from '../../data/mockData';
 import { useCompany } from '../../hooks/useCompany';
+import { useCompanyData } from '../../hooks/useLocalStorage';
+import { mockVehicles, mockAlerts, mockDrivers, mockMaintenance, mockDocuments } from '../../data/mockData';
 
 interface DashboardProps {
   onNavigate: (tab: string) => void;
@@ -13,12 +14,12 @@ export function Dashboard({ onNavigate }: DashboardProps) {
   const [showAlertsModal, setShowAlertsModal] = useState(false);
   const { currentCompany } = useCompany();
 
-  // Filter data by current company
-  const vehicles = mockVehicles.filter(v => v.companyId === currentCompany.id);
-  const alerts = mockAlerts.filter(a => a.companyId === currentCompany.id);
-  const drivers = mockDrivers.filter(d => d.companyId === currentCompany.id);
-  const maintenance = mockMaintenance.filter(m => m.companyId === currentCompany.id);
-  const documents = mockDocuments.filter(d => d.companyId === currentCompany.id);
+  // Obtener datos guardados localmente
+  const [vehicles] = useCompanyData('vehicles', mockVehicles.filter(v => v.companyId === currentCompany.id), currentCompany.id);
+  const [alerts] = useCompanyData('alerts', mockAlerts.filter(a => a.companyId === currentCompany.id), currentCompany.id);
+  const [drivers] = useCompanyData('drivers', mockDrivers.filter(d => d.companyId === currentCompany.id), currentCompany.id);
+  const [maintenance] = useCompanyData('maintenances', mockMaintenance.filter(m => m.companyId === currentCompany.id), currentCompany.id);
+  const [documents] = useCompanyData('documents', mockDocuments.filter(d => d.companyId === currentCompany.id), currentCompany.id);
 
   // Calculate statistics
   const totalVehicles = vehicles.length;
@@ -69,6 +70,9 @@ export function Dashboard({ onNavigate }: DashboardProps) {
         <div>
           <h1 className="text-2xl font-bold text-gray-900">Panel de Control</h1>
           <p className="text-gray-600">Resumen general de la flota de {currentCompany.name}</p>
+          <p className="text-sm text-green-600 mt-1">
+            ✓ Datos guardados automáticamente en tu dispositivo
+          </p>
         </div>
         <div className="mt-4 sm:mt-0">
           <button
@@ -178,18 +182,18 @@ export function Dashboard({ onNavigate }: DashboardProps) {
         <div className="space-y-3">
           <div className="flex items-center space-x-3 p-3 bg-gray-50 rounded-lg">
             <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-            <span className="text-sm text-gray-700">Vehículo ABC-123 completó mantenimiento</span>
-            <span className="text-xs text-gray-500 ml-auto">Hace 2 horas</span>
+            <span className="text-sm text-gray-700">Sistema de almacenamiento local activado</span>
+            <span className="text-xs text-gray-500 ml-auto">Ahora</span>
           </div>
           <div className="flex items-center space-x-3 p-3 bg-gray-50 rounded-lg">
             <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
-            <span className="text-sm text-gray-700">Nuevo conductor registrado: María González</span>
-            <span className="text-xs text-gray-500 ml-auto">Hace 4 horas</span>
+            <span className="text-sm text-gray-700">Datos cargados desde almacenamiento local</span>
+            <span className="text-xs text-gray-500 ml-auto">Hace 1 minuto</span>
           </div>
           <div className="flex items-center space-x-3 p-3 bg-gray-50 rounded-lg">
             <div className="w-2 h-2 bg-yellow-500 rounded-full"></div>
-            <span className="text-sm text-gray-700">Documento de seguro próximo a vencer</span>
-            <span className="text-xs text-gray-500 ml-auto">Hace 1 día</span>
+            <span className="text-sm text-gray-700">Todos los cambios se guardan automáticamente</span>
+            <span className="text-xs text-gray-500 ml-auto">Permanente</span>
           </div>
         </div>
       </div>

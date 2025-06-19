@@ -3,12 +3,20 @@ import { Users, Plus, Search, Filter, Eye, Edit, Trash2, Star } from 'lucide-rea
 import { Driver } from '../../types';
 import { mockDrivers } from '../../data/mockData';
 import { useCompany } from '../../hooks/useCompany';
+import { useCompanyData } from '../../hooks/useLocalStorage';
 import { DriverModal } from './DriverModal';
 import { DriverDetailModal } from './DriverDetailModal';
 
 export function DriversModule() {
   const { currentCompany } = useCompany();
-  const [drivers, setDrivers] = useState<Driver[]>(mockDrivers.filter(d => d.companyId === currentCompany.id));
+  
+  // Usar almacenamiento local para persistir los datos
+  const [drivers, setDrivers] = useCompanyData<Driver[]>(
+    'drivers', 
+    mockDrivers.filter(d => d.companyId === currentCompany.id),
+    currentCompany.id
+  );
+  
   const [filteredDrivers, setFilteredDrivers] = useState<Driver[]>(drivers);
   const [searchTerm, setSearchTerm] = useState('');
   const [showModal, setShowModal] = useState(false);
@@ -38,8 +46,12 @@ export function DriversModule() {
       id: Date.now().toString(),
       companyId: currentCompany.id
     };
-    setDrivers([...drivers, newDriver]);
+    const updatedDrivers = [...drivers, newDriver];
+    setDrivers(updatedDrivers);
     setShowModal(false);
+    
+    // Mostrar confirmación
+    alert('Conductor agregado y guardado correctamente');
   };
 
   const handleEditDriver = (driverData: Omit<Driver, 'id' | 'companyId'>) => {
@@ -50,12 +62,19 @@ export function DriversModule() {
       setDrivers(updatedDrivers);
       setEditingDriver(null);
       setShowModal(false);
+      
+      // Mostrar confirmación
+      alert('Conductor actualizado y guardado correctamente');
     }
   };
 
   const handleDeleteDriver = (driverId: string) => {
-    if (confirm('¿Está seguro de que desea eliminar este conductor?')) {
-      setDrivers(drivers.filter(d => d.id !== driverId));
+    if (confirm('¿Está seguro de que desea eliminar este conductor? Esta acción no se puede deshacer.')) {
+      const updatedDrivers = drivers.filter(d => d.id !== driverId);
+      setDrivers(updatedDrivers);
+      
+      // Mostrar confirmación
+      alert('Conductor eliminado correctamente');
     }
   };
 
@@ -100,6 +119,9 @@ export function DriversModule() {
         <div>
           <h1 className="text-2xl font-bold text-gray-900">Gestión de Conductores</h1>
           <p className="text-gray-600">Administra los conductores de {currentCompany.name}</p>
+          <p className="text-sm text-green-600 mt-1">
+            ✓ Datos guardados automáticamente en tu dispositivo
+          </p>
         </div>
         <button
           onClick={() => {

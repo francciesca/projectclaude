@@ -3,13 +3,21 @@ import { Car, Plus, Search, Filter, Eye, Edit, Trash2 } from 'lucide-react';
 import { Vehicle } from '../../types';
 import { mockVehicles } from '../../data/mockData';
 import { useCompany } from '../../hooks/useCompany';
+import { useCompanyData } from '../../hooks/useLocalStorage';
 import { VehicleCard } from './VehicleCard';
 import { VehicleModal } from './VehicleModal';
 import { VehicleDetailModal } from './VehicleDetailModal';
 
 export function VehiclesModule() {
   const { currentCompany } = useCompany();
-  const [vehicles, setVehicles] = useState<Vehicle[]>(mockVehicles.filter(v => v.companyId === currentCompany.id));
+  
+  // Usar almacenamiento local para persistir los datos
+  const [vehicles, setVehicles] = useCompanyData<Vehicle[]>(
+    'vehicles', 
+    mockVehicles.filter(v => v.companyId === currentCompany.id),
+    currentCompany.id
+  );
+  
   const [filteredVehicles, setFilteredVehicles] = useState<Vehicle[]>(vehicles);
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('all');
@@ -43,8 +51,12 @@ export function VehiclesModule() {
       id: Date.now().toString(),
       companyId: currentCompany.id
     };
-    setVehicles([...vehicles, newVehicle]);
+    const updatedVehicles = [...vehicles, newVehicle];
+    setVehicles(updatedVehicles);
     setShowModal(false);
+    
+    // Mostrar confirmación
+    alert('Vehículo agregado y guardado correctamente');
   };
 
   const handleEditVehicle = (vehicleData: Omit<Vehicle, 'id' | 'companyId'>) => {
@@ -55,12 +67,19 @@ export function VehiclesModule() {
       setVehicles(updatedVehicles);
       setEditingVehicle(null);
       setShowModal(false);
+      
+      // Mostrar confirmación
+      alert('Vehículo actualizado y guardado correctamente');
     }
   };
 
   const handleDeleteVehicle = (vehicleId: string) => {
-    if (confirm('¿Está seguro de que desea eliminar este vehículo?')) {
-      setVehicles(vehicles.filter(v => v.id !== vehicleId));
+    if (confirm('¿Está seguro de que desea eliminar este vehículo? Esta acción no se puede deshacer.')) {
+      const updatedVehicles = vehicles.filter(v => v.id !== vehicleId);
+      setVehicles(updatedVehicles);
+      
+      // Mostrar confirmación
+      alert('Vehículo eliminado correctamente');
     }
   };
 
@@ -88,6 +107,9 @@ export function VehiclesModule() {
         <div>
           <h1 className="text-2xl font-bold text-gray-900">Gestión de Vehículos</h1>
           <p className="text-gray-600">Administra la flota de {currentCompany.name}</p>
+          <p className="text-sm text-green-600 mt-1">
+            ✓ Datos guardados automáticamente en tu dispositivo
+          </p>
         </div>
         <button
           onClick={() => {
