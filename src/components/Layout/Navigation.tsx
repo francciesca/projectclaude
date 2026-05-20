@@ -1,5 +1,5 @@
 import React from 'react';
-import { BarChart3, Car, Users, FileText, Wrench } from 'lucide-react';
+import { BarChart3, Car, Users, FileText, Wrench, Truck } from 'lucide-react';
 
 interface NavigationProps {
   activeTab: string;
@@ -12,6 +12,7 @@ const navItems = [
   { id: 'dashboard', label: 'Tablero', icon: BarChart3 },
   { id: 'vehicles', label: 'Vehículos', icon: Car },
   { id: 'drivers', label: 'Conductores', icon: Users },
+  { id: 'services', label: 'Servicios', icon: Truck },
   { id: 'documents', label: 'Documentos', icon: FileText },
   { id: 'maintenance', label: 'Mantenimiento', icon: Wrench },
 ];

@@ -1,14 +1,31 @@
 import React, { useState } from 'react';
-import { Building2, Eye, EyeOff, User, Lock } from 'lucide-react';
+import { Building2, Eye, EyeOff, Mail, Lock, UserPlus, LogIn } from 'lucide-react';
 import { useAuth } from '../../hooks/useAuth';
+import { supabase } from '../../lib/supabase';
 
 export function LoginForm() {
-  const [username, setUsername] = useState('');
+  const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [name, setName] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-  const { login } = useAuth();
+  const [isSignup, setIsSignup] = useState(false);
+  const [companies, setCompanies] = useState<{ id: string; name: string }[]>([]);
+  const [selectedCompanyId, setSelectedCompanyId] = useState('');
+  const { login, signup } = useAuth();
+
+  React.useEffect(() => {
+    loadCompanies();
+  }, []);
+
+  async function loadCompanies() {
+    const { data } = await supabase.from('companies').select('id, name');
+    if (data) {
+      setCompanies(data);
+      if (data.length > 0) setSelectedCompanyId(data[0].id);
+    }
+  }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -16,25 +33,28 @@ export function LoginForm() {
     setIsLoading(true);
 
     try {
-      // Validate inputs
-      if (!username.trim() || !password.trim()) {
-        setError('Por favor ingrese usuario y contraseña');
+      if (!email.trim() || !password.trim()) {
+        setError('Por favor ingrese email y contrasena');
         return;
       }
 
-      // Attempt login
-      const success = await login(username, password);
-      
-if (!success) {
-  setError('Credenciales incorrectas. Verifique su usuario y contraseña.');
-} else {
-  setTimeout(() => {
-    window.location.reload();
-  }, 100);
-}
-    } catch (error) {
-      console.error('Login error:', error);
-      setError('Error al iniciar sesión. Intente nuevamente.');
+      if (isSignup) {
+        if (!name.trim()) {
+          setError('Por favor ingrese su nombre');
+          return;
+        }
+        const result = await signup(email, password, name, selectedCompanyId);
+        if (!result.success) {
+          setError(result.error || 'Error al registrarse');
+        }
+      } else {
+        const success = await login(email, password);
+        if (!success) {
+          setError('Credenciales incorrectas. Verifique su email y contrasena.');
+        }
+      }
+    } catch {
+      setError('Error al iniciar sesion. Intente nuevamente.');
     } finally {
       setIsLoading(false);
     }
@@ -43,45 +63,60 @@ if (!success) {
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-blue-50 flex items-center justify-center p-4">
       <div className="max-w-md w-full">
-        {/* Logo y título */}
         <div className="text-center mb-8">
           <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-br from-blue-500 to-blue-600 rounded-2xl mb-4 shadow-lg">
             <Building2 className="text-white" size={32} />
           </div>
           <h1 className="text-3xl font-bold text-gray-900 mb-2">Sistema de Flotas</h1>
-          <p className="text-gray-600">Ingrese sus credenciales para continuar</p>
+          <p className="text-gray-600">
+            {isSignup ? 'Crea tu cuenta para comenzar' : 'Ingrese sus credenciales para continuar'}
+          </p>
         </div>
 
-        {/* Formulario */}
         <div className="bg-white rounded-2xl shadow-xl border border-gray-100 p-8">
-          <form onSubmit={handleSubmit} className="space-y-6">
-            {/* Campo Usuario */}
+          <form onSubmit={handleSubmit} className="space-y-5">
+            {isSignup && (
+              <div>
+                <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-2">
+                  Nombre Completo
+                </label>
+                <input
+                  id="name"
+                  type="text"
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  className="block w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors"
+                  placeholder="Juan Perez"
+                  disabled={isLoading}
+                />
+              </div>
+            )}
+
             <div>
-              <label htmlFor="username" className="block text-sm font-medium text-gray-700 mb-2">
-                Usuario
+              <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-2">
+                Email
               </label>
               <div className="relative">
                 <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                  <User className="h-5 w-5 text-gray-400" />
+                  <Mail className="h-5 w-5 text-gray-400" />
                 </div>
                 <input
-                  id="username"
-                  type="text"
-                  value={username}
-                  onChange={(e) => setUsername(e.target.value)}
+                  id="email"
+                  type="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
                   className="block w-full pl-10 pr-3 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors"
-                  placeholder="Ingrese su usuario"
+                  placeholder="correo@empresa.com"
                   required
-                  autoComplete="username"
+                  autoComplete="email"
                   disabled={isLoading}
                 />
               </div>
             </div>
 
-            {/* Campo Contraseña */}
             <div>
               <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-2">
-                Contraseña
+                Contrasena
               </label>
               <div className="relative">
                 <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -93,9 +128,9 @@ if (!success) {
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   className="block w-full pl-10 pr-10 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors"
-                  placeholder="Ingrese su contraseña"
+                  placeholder="Ingrese su contrasena"
                   required
-                  autoComplete="current-password"
+                  autoComplete={isSignup ? 'new-password' : 'current-password'}
                   disabled={isLoading}
                 />
                 <button
@@ -113,45 +148,57 @@ if (!success) {
               </div>
             </div>
 
-            {/* Error message */}
+            {isSignup && (
+              <div>
+                <label htmlFor="company" className="block text-sm font-medium text-gray-700 mb-2">
+                  Empresa
+                </label>
+                <select
+                  id="company"
+                  value={selectedCompanyId}
+                  onChange={(e) => setSelectedCompanyId(e.target.value)}
+                  className="block w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  disabled={isLoading}
+                >
+                  {companies.map((c) => (
+                    <option key={c.id} value={c.id}>{c.name}</option>
+                  ))}
+                </select>
+              </div>
+            )}
+
             {error && (
               <div className="bg-red-50 border border-red-200 rounded-lg p-3">
                 <p className="text-sm text-red-600">{error}</p>
               </div>
             )}
 
-            {/* Botón de login */}
             <button
               type="submit"
               disabled={isLoading}
-              className="w-full bg-gradient-to-r from-blue-500 to-blue-600 text-white py-3 px-4 rounded-lg font-medium hover:from-blue-600 hover:to-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 shadow-lg"
+              className="w-full bg-gradient-to-r from-blue-500 to-blue-600 text-white py-3 px-4 rounded-lg font-medium hover:from-blue-600 hover:to-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 shadow-lg flex items-center justify-center"
             >
               {isLoading ? (
-                <div className="flex items-center justify-center">
+                <div className="flex items-center">
                   <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-2"></div>
-                  Ingresando...
+                  {isSignup ? 'Registrando...' : 'Ingresando...'}
                 </div>
               ) : (
-                'Iniciar Sesión'
+                <div className="flex items-center">
+                  {isSignup ? <UserPlus size={18} className="mr-2" /> : <LogIn size={18} className="mr-2" />}
+                  {isSignup ? 'Registrarse' : 'Iniciar Sesion'}
+                </div>
               )}
             </button>
           </form>
 
-          {/* Información de acceso */}
-          <div className="mt-8 pt-6 border-t border-gray-200">
-            <div className="text-center">
-              <p className="text-sm text-gray-600 mb-4">
-                Para acceder al sistema, contacte al administrador para obtener sus credenciales.
-              </p>
-              <div className="bg-blue-50 rounded-lg p-4">
-                <h3 className="text-sm font-semibold text-blue-800 mb-2">Información del Sistema</h3>
-                <ul className="text-xs text-blue-700 space-y-1">
-                  <li>• Sistema de gestión de flotas vehiculares</li>
-                  <li>• Control de vehículos, conductores y mantenimiento</li>
-                  <li>• Gestión de documentos y alertas</li>
-                </ul>
-              </div>
-            </div>
+          <div className="mt-6 pt-6 border-t border-gray-200 text-center">
+            <button
+              onClick={() => { setIsSignup(!isSignup); setError(''); }}
+              className="text-sm text-blue-600 hover:text-blue-800 font-medium transition-colors"
+            >
+              {isSignup ? 'Ya tengo cuenta - Iniciar Sesion' : 'No tengo cuenta - Registrarse'}
+            </button>
           </div>
         </div>
       </div>

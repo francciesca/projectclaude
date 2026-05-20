@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { useAuth } from './hooks/useAuth';
 import { LoginForm } from './components/Auth/LoginForm';
 import { Header } from './components/Layout/Header';
@@ -8,33 +8,27 @@ import { VehiclesModule } from './components/Vehicles/VehiclesModule';
 import { DriversModule } from './components/Drivers/DriversModule';
 import { DocumentsModule } from './components/Documents/DocumentsModule';
 import { MaintenanceModule } from './components/Maintenance/MaintenanceModule';
+import { ServicesModule } from './components/Services/ServicesModule';
 
 function App() {
-  const { user, isLoading } = useAuth();
+  const { user, profile, isLoading, companyId } = useAuth();
   const [activeTab, setActiveTab] = useState('dashboard');
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
-  console.log('App render - user:', user, 'isLoading:', isLoading);
-
-  // Show loading spinner while checking authentication
   if (isLoading) {
     return (
       <div className="min-h-screen bg-gray-100 flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
-          <p className="text-gray-600">Verificando autenticación...</p>
+          <p className="text-gray-600">Verificando autenticacion...</p>
         </div>
       </div>
     );
   }
 
-  // Show login form if user is not authenticated
-  if (!user) {
-    console.log('No user found, showing login form');
+  if (!user || !profile) {
     return <LoginForm />;
   }
-
-  console.log('User authenticated, showing dashboard');
 
   const handleNavigate = (tab: string) => {
     setActiveTab(tab);
@@ -44,17 +38,19 @@ function App() {
   const renderContent = () => {
     switch (activeTab) {
       case 'dashboard':
-        return <Dashboard onNavigate={handleNavigate} />;
+        return <Dashboard onNavigate={handleNavigate} companyId={companyId!} />;
       case 'vehicles':
-        return <VehiclesModule />;
+        return <VehiclesModule companyId={companyId!} />;
       case 'drivers':
-        return <DriversModule />;
+        return <DriversModule companyId={companyId!} />;
       case 'documents':
-        return <DocumentsModule />;
+        return <DocumentsModule companyId={companyId!} />;
       case 'maintenance':
-        return <MaintenanceModule />;
+        return <MaintenanceModule companyId={companyId!} />;
+      case 'services':
+        return <ServicesModule companyId={companyId!} />;
       default:
-        return <Dashboard onNavigate={handleNavigate} />;
+        return <Dashboard onNavigate={handleNavigate} companyId={companyId!} />;
     }
   };
 
@@ -64,8 +60,7 @@ function App() {
         isMobileMenuOpen={isMobileMenuOpen}
         setIsMobileMenuOpen={setIsMobileMenuOpen}
       />
-      
-      {/* Mobile Navigation */}
+
       {isMobileMenuOpen && (
         <div className="md:hidden fixed inset-0 z-40 bg-white pt-16">
           <Navigation
@@ -76,13 +71,11 @@ function App() {
           />
         </div>
       )}
-      
-      {/* Desktop Navigation */}
+
       <div className="hidden md:block">
         <Navigation activeTab={activeTab} setActiveTab={setActiveTab} />
       </div>
-      
-      {/* Main Content */}
+
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
         {renderContent()}
       </main>

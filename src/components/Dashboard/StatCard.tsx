@@ -1,46 +1,19 @@
-import React from 'react';
-import { DivideIcon as LucideIcon } from 'lucide-react';
+import { type LucideIcon } from 'lucide-react';
 
 interface StatCardProps {
   title: string;
   value: number | string;
   icon: LucideIcon;
-  color: 'blue' | 'green' | 'yellow' | 'red' | 'purple';
+  color: 'blue' | 'green' | 'yellow' | 'red';
   onClick?: () => void;
   subtitle?: string;
 }
 
 const colorStyles = {
-  blue: {
-    bg: 'bg-blue-50',
-    iconBg: 'bg-blue-500',
-    text: 'text-blue-600',
-    hover: 'hover:bg-blue-100'
-  },
-  green: {
-    bg: 'bg-green-50',
-    iconBg: 'bg-green-500',
-    text: 'text-green-600',
-    hover: 'hover:bg-green-100'
-  },
-  yellow: {
-    bg: 'bg-yellow-50',
-    iconBg: 'bg-yellow-500',
-    text: 'text-yellow-600',
-    hover: 'hover:bg-yellow-100'
-  },
-  red: {
-    bg: 'bg-red-50',
-    iconBg: 'bg-red-500',
-    text: 'text-red-600',
-    hover: 'hover:bg-red-100'
-  },
-  purple: {
-    bg: 'bg-purple-50',
-    iconBg: 'bg-purple-500',
-    text: 'text-purple-600',
-    hover: 'hover:bg-purple-100'
-  }
+  blue: { bg: 'bg-blue-50', iconBg: 'bg-blue-500', text: 'text-blue-600', hover: 'hover:bg-blue-100' },
+  green: { bg: 'bg-green-50', iconBg: 'bg-green-500', text: 'text-green-600', hover: 'hover:bg-green-100' },
+  yellow: { bg: 'bg-yellow-50', iconBg: 'bg-yellow-500', text: 'text-yellow-600', hover: 'hover:bg-yellow-100' },
+  red: { bg: 'bg-red-50', iconBg: 'bg-red-500', text: 'text-red-600', hover: 'hover:bg-red-100' },
 };
 
 export function StatCard({ title, value, icon: Icon, color, onClick, subtitle }: StatCardProps) {

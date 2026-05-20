@@ -1,91 +1,95 @@
 import { useState, useEffect } from 'react';
-import { User } from '../types';
+import { supabase } from '../lib/supabase';
+import type { User } from '@supabase/supabase-js';
 
-const VALID_CREDENTIALS = {
-  'cabal': { password: 'cabal123', role: 'admin' as const, name: 'Administrador Cabal' },
-  'usuario': { password: 'usuario123', role: 'user' as const, name: 'Usuario Regular' }
-};
+interface Profile {
+  id: string;
+  name: string;
+  role: 'admin' | 'user';
+  company_id: string;
+}
 
 export function useAuth() {
   const [user, setUser] = useState<User | null>(null);
+  const [profile, setProfile] = useState<Profile | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    // Check for saved user on component mount
-    const checkSavedUser = () => {
-      try {
-        const savedUser = localStorage.getItem('fleetUser');
-        if (savedUser) {
-          const userData = JSON.parse(savedUser);
-          console.log('Loaded saved user:', userData);
-          setUser(userData);
-        }
-      } catch (error) {
-        console.error('Error loading saved user:', error);
-        localStorage.removeItem('fleetUser');
-      } finally {
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setUser(session?.user ?? null);
+      if (session?.user) {
+        fetchProfile(session.user.id);
+      } else {
         setIsLoading(false);
       }
-    };
+    });
 
-    checkSavedUser();
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      setUser(session?.user ?? null);
+      if (session?.user) {
+        (async () => {
+          await fetchProfile(session.user.id);
+        })();
+      } else {
+        setProfile(null);
+        setIsLoading(false);
+      }
+    });
+
+    return () => subscription.unsubscribe();
   }, []);
 
-  const login = async (username: string, password: string): Promise<boolean> => {
-    try {
-      // Trim whitespace from inputs
-      const trimmedUsername = username.trim().toLowerCase();
-      const trimmedPassword = password.trim();
+  async function fetchProfile(userId: string) {
+    const { data, error } = await supabase
+      .from('profiles')
+      .select('id, name, role, company_id')
+      .eq('id', userId)
+      .maybeSingle();
 
-      console.log('Attempting login with:', { username: trimmedUsername });
-
-      const credentials = VALID_CREDENTIALS[trimmedUsername as keyof typeof VALID_CREDENTIALS];
-      
-      if (credentials && credentials.password === trimmedPassword) {
-        const userData: User = {
-          username: trimmedUsername,
-          role: credentials.role,
-          name: credentials.name
-        };
-        
-        console.log('Login successful, saving user:', userData);
-        
-        // Save to localStorage first
-        localStorage.setItem('fleetUser', JSON.stringify(userData));
-        
-        // Then set user state - this will trigger a re-render
-        setUser(userData);
-        
-        return true;
-      }
-      
-      console.log('Invalid credentials for username:', trimmedUsername);
-      return false;
-    } catch (error) {
-      console.error('Login error:', error);
-      return false;
+    if (error) {
+      console.error('Error fetching profile:', error);
+      setIsLoading(false);
+      return;
     }
+
+    setProfile(data as Profile | null);
+    setIsLoading(false);
+  }
+
+  const login = async (email: string, password: string): Promise<boolean> => {
+    const { error } = await supabase.auth.signInWithPassword({
+      email: email.trim(),
+      password: password.trim(),
+    });
+    return !error;
   };
 
-  const logout = () => {
-  try {
-    console.log('Logging out user');
-    localStorage.removeItem('fleetUser');
+  const signup = async (email: string, password: string, name: string, companyId: string): Promise<{ success: boolean; error?: string }> => {
+    const { error } = await supabase.auth.signUp({
+      email: email.trim(),
+      password: password.trim(),
+      options: {
+        data: { name, company_id: companyId, role: 'user' },
+      },
+    });
+    if (error) return { success: false, error: error.message };
+    return { success: true };
+  };
+
+  const logout = async () => {
+    await supabase.auth.signOut();
     setUser(null);
-    setTimeout(() => {
-      window.location.reload();
-    }, 100);
-    console.log('Logout successful');
-  } catch (error) {
-    console.error('Logout error:', error)
-  }
-}
+    setProfile(null);
+  };
 
   return {
     user,
+    profile,
     isLoading,
     login,
+    signup,
     logout,
-    isAdmin: user?.role === 'admin'
+    isAdmin: profile?.role === 'admin',
+    companyId: profile?.company_id ?? null,
   };
 }

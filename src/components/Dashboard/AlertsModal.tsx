@@ -1,4 +1,3 @@
-import React from 'react';
 import { X, AlertTriangle, Clock, FileX, Shield, Wrench } from 'lucide-react';
 import { Alert } from '../../types';
 
@@ -8,11 +7,12 @@ interface AlertsModalProps {
   alerts: Alert[];
 }
 
-const alertIcons = {
+const alertIcons: Record<string, typeof Wrench> = {
   maintenance: Wrench,
   document: FileX,
   license: Shield,
-  insurance: Shield
+  insurance: Shield,
+  'technical-review': Shield,
 };
 
 const priorityColors = {
@@ -60,7 +60,7 @@ export function AlertsModal({ isOpen, onClose, alerts }: AlertsModalProps) {
         <div className="p-6 overflow-y-auto max-h-[60vh]">
           <div className="space-y-4">
             {alerts.map((alert) => {
-              const IconComponent = alertIcons[alert.type];
+              const IconComponent = alertIcons[alert.type] || AlertTriangle;
               const priorityStyle = priorityColors[alert.priority];
               
               return (

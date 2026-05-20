@@ -1,12 +1,15 @@
-export interface User {
-  username: string;
-  role: 'admin' | 'user';
-  name: string;
-}
-
 export interface Company {
   id: string;
   name: string;
+  created_at?: string;
+}
+
+export interface Profile {
+  id: string;
+  name: string;
+  role: 'admin' | 'user';
+  company_id: string;
+  created_at?: string;
 }
 
 export interface Vehicle {
@@ -17,18 +20,19 @@ export interface Vehicle {
   model: string;
   year: number;
   color: string;
-  vehicleType: 'camion' | 'camioneta' | 'cama-baja' | 'auto' | 'furgon' | 'bus' | 'maquinaria' | 'otro';
-  purchaseDate: string;
+  vehicle_type: 'camion' | 'camioneta' | 'cama-baja' | 'auto' | 'furgon' | 'bus' | 'maquinaria' | 'otro';
+  purchase_date: string;
   mileage: number;
   status: 'available' | 'rented' | 'maintenance';
-  lastMaintenance?: string;
-  lastMaintenanceMileage?: number;
-  nextMaintenance?: string;
-  nextMaintenanceMileage?: number;
-  maintenanceInterval: number; // Kilometros entre mantenimientos
-  technicalReviewExpiry?: string; // Fecha de vencimiento de revisión técnica
-  currentClient?: string; // Cliente o empresa actual
-  companyId: string;
+  last_maintenance?: string;
+  last_maintenance_mileage?: number;
+  next_maintenance?: string;
+  next_maintenance_mileage?: number;
+  maintenance_interval: number;
+  technical_review_expiry?: string;
+  current_client?: string;
+  company_id: string;
+  created_at?: string;
 }
 
 export interface Driver {
@@ -38,12 +42,13 @@ export interface Driver {
   phone: string;
   email: string;
   address: string;
-  licenseNumber: string;
-  licenseExpiry: string;
+  license_number: string;
+  license_expiry: string;
   rating: number;
-  monthlyHours: number;
-  assignedVehicle?: string;
-  companyId: string;
+  monthly_hours: number;
+  assigned_vehicle?: string;
+  company_id: string;
+  created_at?: string;
 }
 
 export interface MaintenanceTask {
@@ -54,28 +59,30 @@ export interface MaintenanceTask {
 
 export interface Maintenance {
   id: string;
-  vehicleId: string;
+  vehicle_id: string;
   type: 'preventive' | 'corrective';
   priority: 'low' | 'medium' | 'high';
-  scheduledDate: string;
+  scheduled_date: string;
   status: 'scheduled' | 'in-progress' | 'completed';
   progress: number;
   tasks: MaintenanceTask[];
   cost?: number;
   workshop?: string;
   notes?: string;
-  companyId: string;
+  company_id: string;
+  created_at?: string;
 }
 
 export interface Document {
   id: string;
   name: string;
   type: 'insurance' | 'registration' | 'permit' | 'technical-review' | 'other';
-  expiryDate: string;
+  expiry_date: string;
   status: 'valid' | 'expiring' | 'expired';
-  vehicleId?: string;
-  driverId?: string;
-  companyId: string;
+  vehicle_id?: string;
+  driver_id?: string;
+  company_id: string;
+  created_at?: string;
 }
 
 export interface Alert {
@@ -85,5 +92,25 @@ export interface Alert {
   priority: 'low' | 'medium' | 'high' | 'urgent';
   type: 'maintenance' | 'document' | 'license' | 'insurance' | 'technical-review';
   date: string;
-  companyId: string;
+  company_id: string;
+  created_at?: string;
+}
+
+export interface Service {
+  id: string;
+  client_id: string;
+  vehicle_id: string;
+  service_date: string;
+  service_type: string;
+  chofer_nombre: string;
+  chofer_telefono: string;
+  origen: string;
+  destino: string;
+  trabajo_realizado: string;
+  valor_cobrado: number;
+  payment_status: 'pending' | 'partial' | 'paid';
+  payment_date: string;
+  observaciones: string;
+  company_id: string;
+  created_at?: string;
 }
